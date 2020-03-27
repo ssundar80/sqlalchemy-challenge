@@ -109,28 +109,40 @@ def tobs():
 # 5. Define what to do when a user hits the /api/v1.0/<start> route
 
 @app.route("/api/v1.0/<start>")
-def departure():
+def departure(start):
 
     #Create session
     session= Session(engine)
 
-    #Create input for start date
-    "Enter your trip start date (DD/MM/YYYY)"
-    start_date = input("What is your date of departure?")
+    #Reformat Start Date
+    start_date = datetime.strptime(start, '%Y-%m-%d')
 
     result = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
         filter(Measurement.date >= start_date).all()
     
     #Close session
-    session.close()
+    session.close()     
     
     return jsonify(result)
     
 # 6. Define what to do when a user hits the /api/v1.0/<start>/<end> route
 @app.route("/api/v1.0/<start>/<end>")
-def start_end():
-    print("Server received request for 'About' page...")
-    return "Welcome to my 'About' page!"
+def departure_arrival(start, end):
+
+    #Create session
+    session= Session(engine)
+
+    #Reformat Start Date and End Date
+    start_date = datetime.strptime(start, '%Y-%m-%d')
+    end_date = datetime.strptime(end, '%Y-%m-%d')
+
+    result = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+                          filter(and_(Measurement.date >= start_date, Measurement.date <= end_date)).all()
+
+    #Close session
+    session.close()
+    
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(debug=True)
